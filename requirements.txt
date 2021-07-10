@@ -1,0 +1,8 @@
+sklearn
+torch
+torchvision
+numpy
+Pillow
+opencv-python
+h5py
+tqdm
