@@ -104,19 +104,30 @@ def generate_input_params(data_dir: str, image_paths: List[str]) -> List[Extract
     return input_params
 
 
+def main(input_params, is_multiprocessing: bool = False):
+    total_training_images = len(input_params)
+    model = load_model()
+    print("---- Load model completed ----") 
+    if is_multiprocessing:
+        print("---- Running in multi process mode ----")
+        func = partial(extract_placeCNN_feature, model=model)
+        with Pool(1) as p:
+            with tqdm(total=total_training_images) as pbar:
+                for i, _ in enumerate(p.imap_unordered(func, input_params)):
+                    pbar.update()
+                pass
+    else:
+        print("---- Running in single process mode ----")
+        for input_param in tqdm(input_params):
+            extract_placeCNN_feature(input_param, model)
+     
+
+
 if __name__ == '__main__':
     create_output_folder()
     image_paths = get_dataset_inputs(data_dir)
     input_params = generate_input_params(data_dir, image_paths)
-    total_training_images = len(input_params)
 
     # Start extracting features
-    model = load_model()
-    # for input_param in tqdm(input_params):
-    #     extract_placeCNN_feature(input_param, model)
-    func = partial(extract_placeCNN_feature, model=model)
-    with Pool(3) as p:
-        with tqdm(total=total_training_images) as pbar:
-            for i, _ in enumerate(p.imap_unordered(func, input_params)):
-                pbar.update()
-            pass
+    is_multiprocessing = False
+    main(input_params, is_multiprocessing = is_multiprocessing)
